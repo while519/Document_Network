@@ -8,7 +8,7 @@ if (nargin<3)
     Y=[];
     ly=[];
 end
-    
+
 
 [~,M]=size(X);
 [~,N]=size(Y);
@@ -17,35 +17,12 @@ end
 rng(23);
 makersizex = 6;
 makersizey = 6;
-newX = X;
-newY = Y;
-newlx = lx;
-newly = ly;
-seqx = randperm(M);
-seqy = randperm(N);
-split_pointx = round(M*0.3);
-split_pointx1 = round(M*0.7);
-split_pointy = round(N*0.3);
-split_pointy1 = round(N*0.7);
-X = newX(:, seqx(1:split_pointx));
-Y = newY(:, seqy(1:split_pointy));
-lx = newlx(seqx(1:split_pointx));
-ly = newly(seqy(1:split_pointy));
+
+lx = categorical(lx);
+ly = categorical(ly);
 
 [d, m] = size(X);
 hold on
-colorplot(X, Y, lx, ly, d, m, nargin, varargin, makersizex, makersizey);
-X = newX(:, seqx(split_pointx+1 : split_pointx1));
-Y = newY(:, seqy(split_pointy+1 : split_pointy1));
-lx = newlx(seqx(split_pointx+1 : split_pointx1));
-ly = newly(seqy(split_pointy+1 : split_pointy1));
-[d, m] = size(X);
-colorplot(X, Y, lx, ly, d, m, nargin, varargin, makersizex, makersizey);
-X = newX(:, seqx(split_pointx1+1 : end));
-Y = newY(:, seqy(split_pointy1+1 : end));
-lx = newlx(seqx(split_pointx1+1 : end));
-ly = newly(seqy(split_pointy1+1 : end));
-[d, m] = size(X);
 colorplot(X, Y, lx, ly, d, m, nargin, varargin, makersizex, makersizey);
 hold off
 
@@ -56,114 +33,111 @@ end
 
 function colorplot(X, Y, lx, ly, d, m, cnargin, cvarargin, makersizex, makersizey)
 
-    if (d>3)
-        error('The datasets exceeding 3-dimension! May inverse this input matrix');
-    end
+if (d>3)
+    error('The datasets exceeding 3-dimension! May inverse this input matrix');
+end
 
-    if m~=size(lx,1)
-        error('The X label information is not matched');
-    end
+if m~=size(lx,1)
+    error('The X label information is not matched');
+end
 
-    [~,I]=sort(lx);          % ascending order
-    lx=lx(I,1);
-    X=X(:,I);                % ordered X data points according to the x label information
+[~,I]=sort(lx);          % ascending order
+lx=lx(I,1);
+X=X(:,I);                % ordered X data points according to the x label information
 
-    %~~~~~~~~~~~~~~~obtaining all the classes~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    cx=unique(lx);          % get the class label of X datasets sorted in acsending order
-    c1=size(cx,1);
-
-
-    if cnargin>2
-        [~,N]=size(Y);
-
-        if d~=size(Y,1)
-         error('The row and column data dimension is not match');
-        end
-
-        if N~=size(ly,1)
-          error('The Y label information is not matched');
-        end
-    %**************************************************************************
+%~~~~~~~~~~~~~~~obtaining all the classes~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cx=categories(lx);          % get the class label of X datasets sorted in acsending order
+c1=size(cx,1);
 
 
-        [~, I]=sort(ly);         % ascending order
-        ly=ly(I,1);
-        Y=Y(:,I);                % ordered Y data points according to the y label information
-
-        cy=unique(ly);          % get the class label of Y datasets sorted in acsending order
-        c2=size(cy,1);
-    else
-        c2=0;
-    end
-
-    %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    colour=distinguishable_colors(c1+c2,'w'); % get the c1+c2 distinguishable colours
+if cnargin>2
+    [~,N]=size(Y);
     
-
-    cxx=zeros(c1,1);
-    cyy=zeros(c2,1);
-
-    for ii=1:c1
-        cxx(ii)=size(find(lx==cx(ii)),1);   % get the num of each class stored in cx vector
+    if d~=size(Y,1)
+        error('The row and column data dimension is not match');
     end
-
-    for jj=1:c2
-        cyy(jj)=size(find(ly==cy(jj)),1);    % get the num of each class stored in cy vector
+    
+    if N~=size(ly,1)
+        error('The Y label information is not matched');
     end
-
     %**************************************************************************
+    
+    
+    [~, I]=sort(ly);         % ascending order
+    ly=ly(I,1);
+    Y=Y(:,I);                % ordered Y data points according to the y label information
+    
+    cy=categories(ly);          % get the class label of Y datasets sorted in acsending order
+    c2=size(cy,1);
+else
+    c2=0;
+end
 
-      %  figure()
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-           if cnargin>4
-             text(X(1,:)',X(2,:)',cvarargin{:});
-            end
-        %hold on
-
-
-
-         if d<3                      % 2D plot
-
-             for jj=1:c2
-                 plot(Y(1,1:cyy(jj)),Y(2,1:cyy(jj)),'o', 'MarkerEdgeColor',colour(jj+c1,:),'MarkerSize',makersizey);
-                 Y(:,1:cyy(jj))=[];
-
-             end
-
-            for ii=1:c1
-
-                    plot(X(1,1:cxx(ii)),X(2,1:cxx(ii)),'+', 'MarkerEdgeColor',colour(ii,:),'MarkerSize',makersizex);
-                    X(:,1:cxx(ii))=[];   
-
-            end
+colour=distinguishable_colors(c1+c2,'w'); % get the c1+c2 distinguishable colours
 
 
-         else
+cxx=zeros(c1,1);
+cyy=zeros(c2,1);
 
-              for ii=1:c1
+for ii=1:c1
+    cxx(ii)=size(find(lx==cx(ii)),1);   % get the num of each class stored in cx vector
+end
 
-                    plot3(X(1,1:cxx(ii)),X(2,1:cxx(ii)),X(3,1:cxx(ii)),'+', 'MarkerEdgeColor',colour(ii,:),'MarkerSize',makersizex);
-                    X(:,1:cxx(ii))=[];  
+for jj=1:c2
+    cyy(jj)=size(find(ly==cy(jj)),1);    % get the num of each class stored in cy vector
+end
 
-              end
+%**************************************************************************
 
-            for jj=1:c2
-                    plot3(Y(1,1:cyy(jj)),Y(2,1:cyy(jj)),Y(3,1:cyy(jj)),'o', 'MarkerEdgeColor',colour(jj,:),'MarkerSize',makersizey);
-                    Y(:,1:cyy(jj))=[];
+%  figure()
 
-            end
-
-         end
+if cnargin>4
+    text(X(1,:)',X(2,:)',cvarargin{:});
+end
+%hold on
 
 
 
+if d<3                      % 2D plot
+    
+    for ii=1:c1
+        plot(X(1,1:cxx(ii)),X(2,1:cxx(ii)),'+', 'MarkerEdgeColor',colour(ii,:),'MarkerSize',makersizex);
+        X(:,1:cxx(ii))=[];
+    end
+    
+    for jj=1:c2
+        plot(Y(1,1:cyy(jj)),Y(2,1:cyy(jj)),'o', 'MarkerEdgeColor',colour(jj+c1,:),'MarkerSize',makersizey);
+        Y(:,1:cyy(jj))=[];
+    end
+    
+else
+    
+    for ii=1:c1
+        
+        plot3(X(1,1:cxx(ii)),X(2,1:cxx(ii)),X(3,1:cxx(ii)),'+', 'MarkerEdgeColor',colour(ii,:),'MarkerSize',makersizex);
+        X(:,1:cxx(ii))=[];
+        
+    end
+    
+    for jj=1:c2
+        plot3(Y(1,1:cyy(jj)),Y(2,1:cyy(jj)),Y(3,1:cyy(jj)),'o', 'MarkerEdgeColor',colour(jj,:),'MarkerSize',makersizey);
+        Y(:,1:cyy(jj))=[];
+        
+    end
+    
+end
 
+if exist('cy', 'var')
+    legend([cx; cy]);
+else
+    legend(cx);
+end
+%hold off
 
-    %hold off
-
-    % figure
-    %   image(reshape(colour,[1 size(colour)]));
+% figure
+%   image(reshape(colour,[1 size(colour)]));
 
 end
 
@@ -226,99 +200,99 @@ function colors = distinguishable_colors(n_colors,bg,func)
 
 % Copyright 2010-2011 by Timothy E. Holy
 
-  % Parse the inputs
-  if (nargin < 2)
+% Parse the inputs
+if (nargin < 2)
     bg = [1 1 1];  % default white background
-  else
+else
     if iscell(bg)
-      % User specified a list of colors as a cell aray
-      bgc = bg;
-      for i = 1:length(bgc)
-	bgc{i} = parsecolor(bgc{i});
-      end
-      bg = cat(1,bgc{:});
+        % User specified a list of colors as a cell aray
+        bgc = bg;
+        for i = 1:length(bgc)
+            bgc{i} = parsecolor(bgc{i});
+        end
+        bg = cat(1,bgc{:});
     else
-      % User specified a numeric array of colors (n-by-3)
-      bg = parsecolor(bg);
+        % User specified a numeric array of colors (n-by-3)
+        bg = parsecolor(bg);
     end
-  end
-  
-  % Generate a sizable number of RGB triples. This represents our space of
-  % possible choices. By starting in RGB space, we ensure that all of the
-  % colors can be generated by the monitor.
-  n_grid = 10;  % number of grid divisions along each axis in RGB space
-  x = linspace(0,1,n_grid);
-  [R,G,B] = ndgrid(x,x,x);
-  rgb = [R(:) G(:) B(:)];
-  if (n_colors > size(rgb,1)/3)
+end
+
+% Generate a sizable number of RGB triples. This represents our space of
+% possible choices. By starting in RGB space, we ensure that all of the
+% colors can be generated by the monitor.
+n_grid = 10;  % number of grid divisions along each axis in RGB space
+x = linspace(0,1,n_grid);
+[R,G,B] = ndgrid(x,x,x);
+rgb = [R(:) G(:) B(:)];
+if (n_colors > size(rgb,1)/3)
     error('You can''t readily distinguish that many colors');
-  end
-  
-  % Convert to Lab color space, which more closely represents human
-  % perception
-  if (nargin > 2)
+end
+
+% Convert to Lab color space, which more closely represents human
+% perception
+if (nargin > 2)
     lab = func(rgb);
     bglab = func(bg);
-  else
+else
     C = makecform('srgb2lab');
     lab = applycform(rgb,C);
     bglab = applycform(bg,C);
-  end
+end
 
-  % If the user specified multiple background colors, compute distances
-  % from the candidate colors to the background colors
-  mindist2 = inf(size(rgb,1),1);
-  for i = 1:size(bglab,1)-1
+% If the user specified multiple background colors, compute distances
+% from the candidate colors to the background colors
+mindist2 = inf(size(rgb,1),1);
+for i = 1:size(bglab,1)-1
     dX = bsxfun(@minus,lab,bglab(i,:)); % displacement all colors from bg
     dist2 = sum(dX.^2,2);  % square distance
     mindist2 = min(dist2,mindist2);  % dist2 to closest previously-chosen color
-  end
-  
-  % Iteratively pick the color that maximizes the distance to the nearest
-  % already-picked color
-  colors = zeros(n_colors,3);
-  lastlab = bglab(end,:);   % initialize by making the "previous" color equal to background
-  for i = 1:n_colors
+end
+
+% Iteratively pick the color that maximizes the distance to the nearest
+% already-picked color
+colors = zeros(n_colors,3);
+lastlab = bglab(end,:);   % initialize by making the "previous" color equal to background
+for i = 1:n_colors
     dX = bsxfun(@minus,lab,lastlab); % displacement of last from all colors on list
     dist2 = sum(dX.^2,2);  % square distance
     mindist2 = min(dist2,mindist2);  % dist2 to closest previously-chosen color
     [~,index] = max(mindist2);  % find the entry farthest from all previously-chosen colors
     colors(i,:) = rgb(index,:);  % save for output
     lastlab = lab(index,:);  % prepare for next iteration
-  end
+end
 end
 
 function c = parsecolor(s)
-  if ischar(s)
+if ischar(s)
     c = colorstr2rgb(s);
-  elseif isnumeric(s) && size(s,2) == 3
+elseif isnumeric(s) && size(s,2) == 3
     c = s;
-  else
+else
     error('MATLAB:InvalidColorSpec','Color specification cannot be parsed.');
-  end
+end
 end
 
 function c = colorstr2rgb(c)
-  % Convert a color string to an RGB value.
-  % This is cribbed from Matlab's whitebg function.
-  % Why don't they make this a stand-alone function?
-  rgbspec = [1 0 0;0 1 0;0 0 1;1 1 1;0 1 1;1 0 1;1 1 0;0 0 0];
-  cspec = 'rgbwcmyk';
-  k = find(cspec==c(1));
-  if isempty(k)
+% Convert a color string to an RGB value.
+% This is cribbed from Matlab's whitebg function.
+% Why don't they make this a stand-alone function?
+rgbspec = [1 0 0;0 1 0;0 0 1;1 1 1;0 1 1;1 0 1;1 1 0;0 0 0];
+cspec = 'rgbwcmyk';
+k = find(cspec==c(1));
+if isempty(k)
     error('MATLAB:InvalidColorString','Unknown color string.');
-  end
-  if k~=3 || length(c)==1,
+end
+if k~=3 || length(c)==1,
     c = rgbspec(k,:);
-  elseif length(c)>2,
+elseif length(c)>2,
     if strcmpi(c(1:3),'bla')
-      c = [0 0 0];
+        c = [0 0 0];
     elseif strcmpi(c(1:3),'blu')
-      c = [0 0 1];
+        c = [0 0 1];
     else
-      error('MATLAB:UnknownColorString', 'Unknown color string.');
+        error('MATLAB:UnknownColorString', 'Unknown color string.');
     end
-  end
+end
 end
 
 
