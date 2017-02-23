@@ -14,13 +14,25 @@ end
 switch lower(obj_option)
     
     case 'shared_knn'
-        score = 0;
+        positive_score = 0;
         [knn_index_in_Y, ~] = knnsearch(Y, X, 'k', knn);
         
         for ii = 1 : size(C,1)
-            score = score + ~isempty(intersect(knn_index_in_Y(C(ii,1), :), knn_index_in_Y(C(ii,2),:))); 
+            positive_score = positive_score + ~isempty(intersect(knn_index_in_Y(C(ii,1), :), knn_index_in_Y(C(ii,2),:))); 
         end
-        score = score/size(C,1);
+        nb_utilized_knn = length(unique(knn_index_in_Y(:)));
+        score = - positive_score/size(C,1) - nb_utilized_knn/size(Y,1) ;
+     
+    case 'negative_shared_knn'
+        positive_score = 0;
+        negative_score = 0;
+        [knn_index_in_Y, ~] = knnsearch(Y, X, 'k', knn);
+        
+        for ii = 1 : size(C,1)
+            positive_score = positive_score + ~isempty(intersect(knn_index_in_Y(C(ii,1), :), knn_index_in_Y(C(ii,2),:))); 
+            negative_score = negative_score + ~isempty(intersect(knn_index_in_Y(C(ii,1), :), knn_index_in_Y(randi(C(ii,1)-1),:))); 
+        end
+        score = (negative_score - positive_score)/size(C,1) ;
         
     otherwise
         error( [ 'unknown optimization objective function: ' obj_option ] );
