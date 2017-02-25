@@ -60,6 +60,7 @@ function ydata = tsne_p(P, labels, no_dims)
     gains = ones(size(ydata));
     
     % Run the iterations
+    figure
     for iter=1:max_iter
         
         % Compute joint probability that point i and j are neighbors

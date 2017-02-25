@@ -74,6 +74,8 @@ function ydata = tsne(X, labels, no_dims, initial_dims, perplexity)
     
     % Compute joint probabilities
     P = d2p(D, perplexity, 1e-5);                                           % compute affinities using fixed perplexity
+    figure
+    imagesc(P);
     clear D
     
     % Run t-SNE
