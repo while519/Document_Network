@@ -25,3 +25,24 @@ end
 
 MRR = MRR / length(rowidx);
 MR = MR / length(rowidx);
+disp(['Training set Mean Rank: ' num2str(MR)]);
+disp(['Training set Mean Reciprocal Rank: ' num2str(MRR)]);
+
+%%
+% testing linkages
+MRR = 0;
+MR = 0;
+
+for ii = 1 : length(row_idx_test)
+    rankr = find(idx(:, row_idx_test(ii)) == column_idx_test(ii)) -1;
+%    rankc = find(idx(:, columnidx(ii)) == rowidx(ii));     % this is the
+%    equavalent counterpart
+
+    MRR = MRR + 1/rankr;
+    MR = MR + rankr;
+end
+
+MRR = MRR / length(rowidx);
+MR = MR / length(rowidx);
+disp(['Testing set Mean Rank: ' num2str(MR)]);
+disp(['Testing set Mean Reciprocal Rank: ' num2str(MRR)]);

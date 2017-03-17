@@ -14,8 +14,14 @@ datasets = {'cornell', 'texas', 'washington', 'wisconsin'};
 %% 
 %   loading the relevent variables/matrices to the workspace
 processing_data_id = 1;
-load(['../Data/' datasets{processing_data_id} '.mat'], ...
-    'C', 'X', 'webpage_ids', 'webpage_classnames');
+
+% load(['../Data/' datasets{processing_data_id} '.mat'], ...
+%     'C', 'X', 'webpage_ids', 'webpage_classnames');
+
+load([datasets{processing_data_id} '_split.mat'], ...
+        'C', 'X', 'webpage_ids', 'webpage_classnames', ...
+        'row_idx_test', 'column_idx_test');
+
 
 %%
 %   Visualize the matrix strcuture
