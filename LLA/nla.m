@@ -74,7 +74,9 @@ Ld = (Ld + Ld.')/2;
 [U, S, ~] = svds(Lc);
 idx = find(diag(S) > 0);
 if length(idx) < out_dim
-    error(['solutions can not be found for dimensionality of ' num2str(out_dim)]);
+    warning(['solutions can not be found for dimensionality of ' num2str(out_dim) ...
+        ', using the maximum embedding dimension instead']);
+    out_dim = length(idx);
 end
 
 U = U(:, idx);
