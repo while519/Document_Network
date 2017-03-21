@@ -10,10 +10,12 @@ clc
 rng(213);
 
 datasets = {'cora', 'citeseer', 'cornell', 'texas', 'washington', 'wisconsin'};
+methods = {'lla', 'nla'};
 
 %% 
 %   loading the relevent variables/matrices to the workspace
-processing_data_id = 1;
+processing_method_id = 2;
+processing_data_id = 3;
 
 % load(['../Data/' datasets{processing_data_id} '.mat'], ...
 %     'C', 'X', 'webpage_ids', 'webpage_classnames');
@@ -21,10 +23,15 @@ processing_data_id = 1;
 load(['../data/' datasets{processing_data_id} '.mat'], ...
         'C', 'X', 'webpage_ids', 'webpage_classnames');
 C = C | C.';
+C0 = C - diag(diag(C));
+
+%% check the conformity between matrix X and C
+%
+rank_score(X, C);
 
 %% Split the dataset into training/testing sets
 % 
-sub_sampling_ratio = 0.001;
+sub_sampling_ratio = 0.01;
 
 M = size(C, 1);
 total_linkages = M * (M - 1) / 2;
@@ -71,13 +78,22 @@ title('Citation Linkages Matrix C');
 
 %% Run the linear model
 % 
-Y = preprocessing(X, 100, 'PCA');
-P = lla(Y, C, 10);
-Z = Y * P;      % embedded points in $\mathbf{Z}$
+switch methods{processing_method_id}
+    case 'lla'
+        disp('It is running the linear model of lla');
+        Y = preprocessing(X, 100, 'PCA');
+        P = lla(Y, C, 10);
+        Z = Y * P;      % embedded points in $\mathbf{Z}$
+    
+    case 'nla'
+        disp('It is running the nonlinear model of nla');
+        Z = nla(X, C, 10, 'cosine');
+end
 
 %% Evaluation using classification error rate
 % 
 Z = normc(Z);
+rank_score(Z, C0);
 lz = categorical(webpage_classnames);
 
 % train a nearest neigbours classifier
@@ -136,4 +152,6 @@ MRR = MRR / length(rowidx);
 MR = MR / length(rowidx);
 disp(['Testing set Mean Rank: ' num2str(MR)]);
 disp(['Testing set Mean Reciprocal Rank: ' num2str(MRR)]);
+
+close all
 

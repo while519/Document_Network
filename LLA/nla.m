@@ -71,8 +71,16 @@ Ld = (Ld + Ld.')/2;
 %%
 % deal with the annoying null eigenvalues: $\mathbf{Y} = \mathbf{U} * \mathbf{Z}$, where \mathbf{U} is the range
 % space of $\mathbf{L}_c$
-[U, S, ~] = svds(Lc);
-idx = find(diag(S) > 0);
+
+% this is a bug in the code that svds only takes the 6 largest singular
+% values
+% [U, S, ~] = svds(Lc);
+
+[U, S, ~] = svd(full(Lc));
+tol = max(size(Lc)) * eps(norm(full(Lc)));
+
+idx = find(diag(S) > tol);
+
 if length(idx) < out_dim
     warning(['solutions can not be found for dimensionality of ' num2str(out_dim) ...
         ', using the maximum embedding dimension instead']);
