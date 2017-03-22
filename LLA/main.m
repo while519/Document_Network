@@ -1,4 +1,4 @@
-%%% Exemplary script for running the linear linkage model
+%% Exemplary script for running the network model
 
 %%
 % initialize the script
@@ -7,10 +7,15 @@ clear all
 close all
 clc
 
-rng(213);
+rng(215);
 
 datasets = {'cora', 'citeseer', 'cornell', 'texas', 'washington', 'wisconsin'};
 methods = {'lla', 'nla'};
+
+%% parameters loading
+sub_sampling_ratio = 0.9;
+out_dim = 7;
+
 
 %% 
 % loading the relevent variables/matrices to the workspace
@@ -32,7 +37,6 @@ rank_plot(X, C0);
 
 %% Split the dataset into training/testing sets
 % 
-sub_sampling_ratio = 0.9;
 [ row_idx_train, column_idx_train, row_idx_test, column_idx_test, nb_training_samples] ...
     = sample_linkages( C0, sub_sampling_ratio);
 
@@ -57,14 +61,14 @@ title('Citation Linkages Matrix C');
 % 
 switch methods{processing_method_id}
     case 'lla'
-        disp('It is running the linear model of lla');
+        disp(['It is running the linear model of lla on the dataset of ' datasets{processing_data_id}]);
         Y = preprocessing(X, 100, 'PCA');
-        P = lla(Y, C, 10);
+        P = lla(Y, C, out_dim);
         Z = Y * P;      % embedded points in $\mathbf{Z}$
     
     case 'nla'
-        disp('It is running the nonlinear model of nla');
-        Z = nla(X, C, 20, 'cosine');
+        disp(['It is running the nonlinear model of nla on the data set of ' datasets{processing_data_id}]);
+        Z = nla(X, C, out_dim, 'cosine');
 end
 
 %% Plot the evaluation upon all linkages
