@@ -1,7 +1,7 @@
-function [  ] = rank_score(X, C)
-%% RANK_SCORE - access the conformity between content and linkages using different different measure
+function [  ] = rank_plot(X, C)
+%% RANK_PLOT - access the conformity between content and linkages using different different measure
 %
-%  rank_score(X, C);
+%  rank_plot(X, C);
 %
 %   X - (M x N) matrix
 %   C - (M x M) matrix
@@ -40,30 +40,12 @@ C = C - diag(diag(C));
 
 MR_list = [];
 MRR_list = [];
-mismatch_list = [];
+hitn_list = [];
 for ii = 1 : 10
-    MR = 0;
-    MRR = 0;
-    mismatch = 0;
-    DistMat = squareform(pdist(X, distances{ii}));  % distance metric
-    [~, idx] = sort(DistMat, 'ascend');  % sorted ascend for each column
-    for jj = 1 : length(row_idx)
-        rank = find(idx(:, row_idx(jj)) ==  column_idx(jj)) - 1;
-        rank_ = find(idx(:, column_idx(jj)) == row_idx(jj)) - 1; 
-        MRR = MRR + 1/rank;
-        MR = MR + rank;
-        
-        mismatch = mismatch + 1;
-        if (rank <= 100) && (rank_ <= 100)
-            mismatch = mismatch - 1;
-        end
-    end
-    MRR = MRR / length(row_idx);
-    MR = MR / length(row_idx);
-    mismatch = 100 * mismatch / length(row_idx);
+    [ MR, MRR, hitn ] = rank_evals( X, row_idx, column_idx,  distances{ii});
     MR_list = [MR_list; MR];
     MRR_list = [MRR_list; MRR];
-    mismatch_list = [mismatch_list; mismatch];
+    hitn_list = [hitn_list; hitn];
 end
 
 figure
@@ -77,8 +59,8 @@ legend({'Mean Reciprocal Rank'});
 set(gca, 'XTick', 1:10, 'XTickLabel', distances);
 
 figure
-bar([mismatch_list]);
-legend({'Mismatch Rate'});
+bar([hitn_list]);
+legend({'Hit@100 Rate'});
 set(gca, 'XTick', 1:10, 'XTickLabel', distances);
 
 end
