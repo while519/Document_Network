@@ -40,7 +40,7 @@ if ~exist('distance', 'var')
     distance = 'euclidean';
 end
 
-n = 100;
+n = 10;
 MR = 0;
 MRR = 0;
 hitn = 0;

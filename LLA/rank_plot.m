@@ -32,7 +32,7 @@ function [  ] = rank_plot(X, C)
 % output is all xxx, and allows the option of forcing xxx
 
 distances = {'euclidean', 'seuclidean', 'cityblock', 'minkowski', 'chebychev', ...
-     'cosine', 'correlation', 'spearman', 'hamming', 'jaccard'};
+     'cosine'};   % 'correlation', 'spearman', 'hamming' ,'jaccard'
 
 C = triu(C);
 C = C - diag(diag(C));
@@ -41,7 +41,7 @@ C = C - diag(diag(C));
 MR_list = [];
 MRR_list = [];
 hitn_list = [];
-for ii = 1 : 10
+for ii = 1 : length(distances)
     [ MR, MRR, hitn ] = rank_evals( X, row_idx, column_idx,  distances{ii});
     MR_list = [MR_list; MR];
     MRR_list = [MRR_list; MRR];
@@ -51,17 +51,17 @@ end
 figure
 bar([MR_list]);
 legend({'Mean Rank'});
-set(gca, 'XTick', 1:10, 'XTickLabel', distances);
+set(gca, 'XTick', 1:length(distances), 'XTickLabel', distances);
 
 figure
 bar([MRR_list]);
 legend({'Mean Reciprocal Rank'});
-set(gca, 'XTick', 1:10, 'XTickLabel', distances);
+set(gca, 'XTick', 1:length(distances), 'XTickLabel', distances);
 
 figure
 bar([hitn_list]);
-legend({'Hit@100 Rate'});
-set(gca, 'XTick', 1:10, 'XTickLabel', distances);
+legend({'Hit@10 Rate'});
+set(gca, 'XTick', 1:length(distances), 'XTickLabel', distances);
 
 end
 

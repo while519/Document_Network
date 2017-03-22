@@ -63,7 +63,8 @@ Lc = (Lc + Lc.')/2;
 D = squareform(pdist(X, distance));
 C_ = ~C;
 D = D.*logical(C_);
-%D = D/max(D(:));
+D = D/max(D(:));
+
 dd = sum(D, 2);
 Ld = diag(dd) - D;
 Ld = (Ld + Ld.')/2;
@@ -72,9 +73,6 @@ Ld = (Ld + Ld.')/2;
 % deal with the annoying null eigenvalues: $\mathbf{Y} = \mathbf{U} * \mathbf{Z}$, where \mathbf{U} is the range
 % space of $\mathbf{L}_c$
 
-% this is a bug in the code that svds only takes the 6 largest singular
-% values
-% [U, S, ~] = svds(Lc);
 
 [U, S, ~] = svd(full(Lc));
 tol = max(size(Lc)) * eps(norm(full(Lc)));

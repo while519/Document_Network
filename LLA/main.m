@@ -13,8 +13,8 @@ datasets = {'cora', 'citeseer', 'cornell', 'texas', 'washington', 'wisconsin'};
 methods = {'lla', 'nla'};
 
 %% parameters loading
-sub_sampling_ratio = 0.9;
-out_dim = 7;
+sub_sampling_ratio = 0.8;
+out_dim = 30;
 
 
 %% 
@@ -37,7 +37,7 @@ rank_plot(X, C0);
 
 %% Split the dataset into training/testing sets
 % 
-[ row_idx_train, column_idx_train, row_idx_test, column_idx_test, nb_training_samples] ...
+[ row_idx_train, column_idx_train, row_idx_test, column_idx_test, nb_training_samples, nb_testing_samples] ...
     = sample_linkages( C0, sub_sampling_ratio);
 
 % convert matrix for training
@@ -74,34 +74,39 @@ end
 %% Plot the evaluation upon all linkages
 %
 Z = normc(Z);
-rank_plot(Z, C0);
+% convert matrix for training
+C1 = sparse(row_idx_test, column_idx_test, ...
+    ones(nb_testing_samples, 1), size(C0, 1), size(C0, 2));        
+C1 = C1 | C1.';
+C1 = C1 - diag(diag(C1));
+rank_plot(Z, C1);
 
-%% Evaluation using classification error rate
+% %% Evaluation using classification error rate
+% % 
+% lz = categorical(webpage_classnames);
 % 
-lz = categorical(webpage_classnames);
-
-% train a nearest neigbours classifier
-Mdl = fitcknn(Z, lz, 'NumNeighbors', 1, 'Standardize', 1, ...
-    'Distance', 'cosine');
-
-% examing some of the properties of model
-Mdl.ClassNames
-Mdl.Prior
-
-% resubstitution loss
-rloss = resubLoss(Mdl);
-
-% Cross-validated classifier
-CVMdl = crossval(Mdl);
-kloss = kfoldLoss(CVMdl);
-disp(['The resubstitution loss for nearest neighbour classifier: ' num2str(rloss)]);
-disp(['The classification error rate: ' num2str(kloss)]);
+% % train a nearest neigbours classifier
+% Mdl = fitcknn(Z, lz, 'NumNeighbors', 1, 'Standardize', 1, ...
+%     'Distance', 'cosine');
+% 
+% % examing some of the properties of model
+% Mdl.ClassNames
+% Mdl.Prior
+% 
+% % resubstitution loss
+% rloss = resubLoss(Mdl);
+% 
+% % Cross-validated classifier
+% CVMdl = crossval(Mdl);
+% kloss = kfoldLoss(CVMdl);
+% disp(['The resubstitution loss for nearest neighbour classifier: ' num2str(rloss)]);
+% disp(['The classification error rate: ' num2str(kloss)]);
 
 %% Mean Reciprocal Rank Evaluation
 %
 distance = 'euclidean';
 
-[MR, MRR, hitn ] = rank_evals( X, row_idx_train, column_idx_train, distance);
+[MR, MRR, hitn ] = rank_evals( X, row_idx_train, column_idx_train, 'cosine');
 disp(['Content Only Training set Mean Rank: ' num2str(MR)]);
 disp(['Content Only Training set Mean Reciprocal Rank: ' num2str(MRR)]);
 disp(['Content Only Training set hit@n: ' num2str(hitn)]);
@@ -112,7 +117,7 @@ disp(['Training set Mean Reciprocal Rank: ' num2str(MRR)]);
 disp(['Training set hit@n: ' num2str(hitn)]);
 
 % testing ranks
-[MR, MRR, hitn ] = rank_evals( X, row_idx_test, column_idx_test, distance);
+[MR, MRR, hitn ] = rank_evals( X, row_idx_test, column_idx_test, 'cosine');
 disp(['Content Only Testing set Mean Rank: ' num2str(MR)]);
 disp(['Content Only Testing set Mean Reciprocal Rank: ' num2str(MRR)]);
 disp(['Content Only Testing set hit@n: ' num2str(hitn)]);
