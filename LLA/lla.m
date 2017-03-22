@@ -66,7 +66,7 @@ Sw = (Sw + Sw.')/2;
 
 P = P(:, I(1: out_dim));
 lambda = lambda(I(1: out_dim));
-disp('Eigenvalues: ');
+disp('LLA Eigenvalues: ');
 disp(lambda)
 
 end

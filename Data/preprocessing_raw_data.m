@@ -4,7 +4,7 @@ clear all
 close all
 clc
 datasets = {'cora', 'citeseer', 'cornell', 'texas', 'washington', 'wisconsin'};
-processing_data_id = 6;
+processing_data_id = 2;
 load(['./' datasets{processing_data_id} '/raw_' datasets{processing_data_id}]);
 disp(['proprecessing the dataset: ' datasets{processing_data_id}])
 
@@ -102,4 +102,4 @@ title('The Content Matrix X')
 %% 
 % Save the dataset
 
-save(['./' datasets{processing_data_id} '.mat'], 'C', 'X', 'webpage_ids', 'webpage_classnames');
+save(['./' datasets{processing_data_id} '.mat'], 'citing_index', 'cited_index', 'C', 'X', 'webpage_ids', 'webpage_classnames');
