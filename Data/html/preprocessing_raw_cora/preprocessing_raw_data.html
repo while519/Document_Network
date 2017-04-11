@@ -1,0 +1,293 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Preprocessing the docuement network data to extract the linkages and the content information</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-04-11"><meta name="DC.source" content="preprocessing_raw_data.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Preprocessing the docuement network data to extract the linkages and the content information</h1><pre class="codeinput">clear <span class="string">all</span>
+close <span class="string">all</span>
+clc
+datasets = {<span class="string">'cora'</span>, <span class="string">'citeseer'</span>, <span class="string">'cornell'</span>, <span class="string">'texas'</span>, <span class="string">'washington'</span>, <span class="string">'wisconsin'</span>};
+processing_data_id = 1;
+load([<span class="string">'./'</span> datasets{processing_data_id} <span class="string">'/raw_'</span> datasets{processing_data_id}]);
+disp([<span class="string">'proprecessing the dataset: '</span> datasets{processing_data_id}])
+
+<span class="comment">% Content information</span>
+webpage_ids = eval([datasets{processing_data_id} <span class="string">'_ids'</span>]);
+webpage_classnames = eval([datasets{processing_data_id} <span class="string">'_classnames'</span>]);
+W = eval([datasets{processing_data_id} <span class="string">'_W'</span>]);
+
+cited_ids = eval([datasets{processing_data_id} <span class="string">'_cited_ids'</span>]);
+citing_ids = eval([datasets{processing_data_id} <span class="string">'_citing_ids'</span>]);
+</pre><pre class="codeoutput">proprecessing the dataset: cora
+</pre><p>Check the unique paper id set</p><pre class="codeinput">webpage_unique_ids = unique(webpage_ids);
+<span class="keyword">if</span> length(webpage_ids) == length(webpage_unique_ids)
+    s = sprintf(<span class="string">'The webpage id is unique and no duplications'</span>);
+    disp(s)
+<span class="keyword">else</span>
+    error(<span class="string">'repetitive webpages in the content'</span>);
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">The webpage id is unique and no duplications
+</pre><p>check if the linkages' paper id are in the content</p><pre class="codeinput">citing_set = unique(citing_ids);
+cited_set = unique(cited_ids);
+
+citing_indicator = ismember(citing_set, webpage_ids);
+cited_indicator = ismember(cited_set, webpage_ids);
+
+<span class="comment">% webpage_ids contain the unique identifier for each webpage,</span>
+<span class="comment">% so we index each citing/cited instances with that identifier.</span>
+[~, citing_index] = ismember(citing_ids, webpage_ids);
+[~, cited_index] = ismember(cited_ids, webpage_ids);
+
+<span class="comment">% remove the papers that cites oneself</span>
+ind = find(cited_index == citing_index);
+<span class="keyword">if</span> ind
+    cited_index(ind) = [];
+    citing_index(ind) = [];
+    disp(<span class="string">'removing papers that cite oneself'</span>);
+<span class="keyword">end</span>
+
+<span class="keyword">if</span> all(citing_indicator) &amp; all(cited_indicator)
+    s = sprintf(<span class="string">'All lingkage instances are included in the content'</span>);
+    disp(s);
+<span class="keyword">else</span>
+    disp(<span class="string">'linkages'' docuement set is not included in the content'</span>);
+    <span class="comment">% remove unused webpages in the content</span>
+    rm_citations = citing_index &amp; cited_index;
+    rm_idx = find(rm_citations == 0);
+    disp(length(rm_idx));        <span class="comment">% number of removed elements</span>
+    citing_index(rm_idx) = [];
+    cited_index(rm_idx) = [];
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">All lingkage instances are included in the content
+</pre><p>Construct the linkage network matrix C</p><pre class="codeinput">C = sparse(citing_index, cited_index, ones(length(citing_index),1), length(webpage_ids), length(webpage_ids));
+C = C | C.';
+C = C - diag(diag(C));
+
+<span class="comment">% # it is not necessary to remove those instances have contents but with null linkages</span>
+<span class="comment">% rm_idx = find(sum(C,1) == 0);    % remove the null citations</span>
+<span class="comment">% if rm_idx</span>
+<span class="comment">%     disp('we have to remove some instances due to that they have no linkages to others');</span>
+<span class="comment">% else</span>
+<span class="comment">%     disp('This is a good data that we do not need to remove instances');</span>
+<span class="comment">% end</span>
+<span class="comment">%</span>
+<span class="comment">% C(rm_idx, :) = [];</span>
+<span class="comment">% C(:, rm_idx) = [];</span>
+<span class="comment">% C = C | C.';</span>
+<span class="comment">%</span>
+<span class="comment">% W(rm_idx, :) = [];</span>
+<span class="comment">% webpage_classnames(rm_idx) = [];</span>
+<span class="comment">% webpage_ids(rm_idx) = [];        % remove some webpages</span>
+
+figure
+imagesc(C);
+title(<span class="string">'The Linkage Data Matrix C'</span>);
+</pre><img vspace="5" hspace="5" src="preprocessing_raw_data_01.png" alt=""> <p>The W matrix</p><pre class="codeinput">idc = find(sum(W, 1) == 0);     <span class="comment">% this feature is not present</span>
+W(:, idc) = [];
+
+idr = find(sum(W,2) == 0);      <span class="comment">% not likely, but these webpages have no contents that we have to remove them</span>
+<span class="keyword">if</span> idr
+    disp(<span class="string">'remove those webpages having no word representations or those webpages'' having no content'</span>);
+    W(idr, :) = [];
+    C(idr, :) = [];
+    C(:, idr) = [];
+    C = C | C.';
+<span class="keyword">else</span>
+    disp(<span class="string">'Good that all webpages can be fairly represented by these words'</span>);
+<span class="keyword">end</span>
+
+X = W;
+figure
+imagesc(X);
+title(<span class="string">'The Content Matrix X'</span>)
+</pre><pre class="codeoutput">Good that all webpages can be fairly represented by these words
+</pre><img vspace="5" hspace="5" src="preprocessing_raw_data_02.png" alt=""> <p>Save the dataset</p><pre class="codeinput">I = [cited_index, citing_index];
+save([<span class="string">'./'</span> datasets{processing_data_id} <span class="string">'.mat'</span>], <span class="string">'citing_index'</span>, <span class="string">'cited_index'</span>, <span class="string">'I'</span>, <span class="keyword">...</span>
+    <span class="string">'C'</span>, <span class="string">'X'</span>, <span class="string">'webpage_ids'</span>, <span class="string">'webpage_classnames'</span>);
+close <span class="string">all</span>
+clear
+clc
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Preprocessing the docuement network data to extract the linkages and the content information
+
+clear all
+close all
+clc
+datasets = {'cora', 'citeseer', 'cornell', 'texas', 'washington', 'wisconsin'};
+processing_data_id = 1;
+load(['./' datasets{processing_data_id} '/raw_' datasets{processing_data_id}]);
+disp(['proprecessing the dataset: ' datasets{processing_data_id}])
+
+% Content information
+webpage_ids = eval([datasets{processing_data_id} '_ids']);
+webpage_classnames = eval([datasets{processing_data_id} '_classnames']);
+W = eval([datasets{processing_data_id} '_W']);
+
+cited_ids = eval([datasets{processing_data_id} '_cited_ids']);
+citing_ids = eval([datasets{processing_data_id} '_citing_ids']);
+%% 
+% Check the unique paper id set
+
+webpage_unique_ids = unique(webpage_ids);
+if length(webpage_ids) == length(webpage_unique_ids)
+    s = sprintf('The webpage id is unique and no duplications');
+    disp(s)
+else
+    error('repetitive webpages in the content');
+end
+%% 
+% check if the linkages' paper id are in the content
+
+citing_set = unique(citing_ids);
+cited_set = unique(cited_ids);
+
+citing_indicator = ismember(citing_set, webpage_ids);
+cited_indicator = ismember(cited_set, webpage_ids);
+
+% webpage_ids contain the unique identifier for each webpage, 
+% so we index each citing/cited instances with that identifier.
+[~, citing_index] = ismember(citing_ids, webpage_ids);
+[~, cited_index] = ismember(cited_ids, webpage_ids);
+
+% remove the papers that cites oneself
+ind = find(cited_index == citing_index);
+if ind
+    cited_index(ind) = [];
+    citing_index(ind) = [];
+    disp('removing papers that cite oneself');
+end
+
+if all(citing_indicator) & all(cited_indicator)
+    s = sprintf('All lingkage instances are included in the content');
+    disp(s);
+else 
+    disp('linkages'' docuement set is not included in the content');
+    % remove unused webpages in the content
+    rm_citations = citing_index & cited_index;
+    rm_idx = find(rm_citations == 0);
+    disp(length(rm_idx));        % number of removed elements
+    citing_index(rm_idx) = [];
+    cited_index(rm_idx) = [];
+end
+%% 
+% Construct the linkage network matrix C
+
+C = sparse(citing_index, cited_index, ones(length(citing_index),1), length(webpage_ids), length(webpage_ids));
+C = C | C.';
+C = C - diag(diag(C));
+
+% # it is not necessary to remove those instances have contents but with null linkages
+% rm_idx = find(sum(C,1) == 0);    % remove the null citations
+% if rm_idx
+%     disp('we have to remove some instances due to that they have no linkages to others');
+% else
+%     disp('This is a good data that we do not need to remove instances');
+% end
+% 
+% C(rm_idx, :) = [];
+% C(:, rm_idx) = [];
+% C = C | C.';
+% 
+% W(rm_idx, :) = [];
+% webpage_classnames(rm_idx) = [];
+% webpage_ids(rm_idx) = [];        % remove some webpages
+
+figure
+imagesc(C);
+title('The Linkage Data Matrix C');
+%% 
+% The W matrix
+
+
+idc = find(sum(W, 1) == 0);     % this feature is not present
+W(:, idc) = [];
+
+idr = find(sum(W,2) == 0);      % not likely, but these webpages have no contents that we have to remove them
+if idr
+    disp('remove those webpages having no word representations or those webpages'' having no content');
+    W(idr, :) = [];
+    C(idr, :) = [];
+    C(:, idr) = [];
+    C = C | C.';
+else
+    disp('Good that all webpages can be fairly represented by these words');
+end
+
+X = W;
+figure
+imagesc(X);
+title('The Content Matrix X')
+%% 
+% Save the dataset
+I = [cited_index, citing_index];
+save(['./' datasets{processing_data_id} '.mat'], 'citing_index', 'cited_index', 'I', ...
+    'C', 'X', 'webpage_ids', 'webpage_classnames');
+close all
+clear
+clc
+##### SOURCE END #####
+--></body></html>
