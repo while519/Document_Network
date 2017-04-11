@@ -39,6 +39,14 @@ cited_indicator = ismember(cited_set, webpage_ids);
 [~, citing_index] = ismember(citing_ids, webpage_ids);
 [~, cited_index] = ismember(cited_ids, webpage_ids);
 
+% remove the papers that cites oneself
+ind = find(cited_index == citing_index);
+if ind
+    cited_index(ind) = [];
+    citing_index(ind) = [];
+    disp('removing papers that cite oneself');
+end
+
 if all(citing_indicator) & all(cited_indicator)
     s = sprintf('All lingkage instances are included in the content');
     disp(s);
@@ -86,7 +94,7 @@ W(:, idc) = [];
 
 idr = find(sum(W,2) == 0);      % not likely, but these webpages have no contents that we have to remove them
 if idr
-    disp('remove those webpages having no word representations');
+    disp('remove those webpages having no word representations or those webpages'' having no content');
     W(idr, :) = [];
     C(idr, :) = [];
     C(:, idr) = [];
@@ -101,5 +109,9 @@ imagesc(X);
 title('The Content Matrix X')
 %% 
 % Save the dataset
-
-save(['./' datasets{processing_data_id} '.mat'], 'citing_index', 'cited_index', 'C', 'X', 'webpage_ids', 'webpage_classnames');
+I = [cited_index, citing_index];
+save(['./' datasets{processing_data_id} '.mat'], 'citing_index', 'cited_index', 'I', ...
+    'C', 'X', 'webpage_ids', 'webpage_classnames');
+close all
+clear
+clc
