@@ -61,38 +61,21 @@ mapping.mean = mean(X, 1);
 X = bsxfun(@minus, X, mapping.mean);
 
 % Initialize some variables
-max_iter = 1;
+max_iter = 10;
 [n, d] = size(X);
 batch_size = min(5000, n);
 no_batches = ceil(n / batch_size);
 max_iter = ceil(max_iter / no_batches);
 A = randn(d, out_dim) * .01;
-converged = false;
-iter = 0;
+
 
 %d = checkgrad('lnca_lin_grad', A(:), 1e-5, X, I, out_dim, lambda);
 %fprint(d);
 
-% Main iteration loop
-while iter < max_iter && ~converged
-    
-    % Loop over batches
-    iter = iter + 1;
-    disp(['Iteration ' num2str(iter) ' of ' num2str(max_iter) '...']);
-    ind = randperm(n);
-    for batch=1:batch_size:n
-        
-        % Run NCA minimization using three linesearches
-        cur_X    = double(X(ind(batch:min([batch + batch_size - 1 n])),:));
-        cur_I = I(ind(batch:min([batch + batch_size - 1 n])), :);
-        [A, f] = minimize(A(:), method, 200, cur_X, cur_I, out_dim, lambda);
-        A = reshape(A, [d out_dim]);
-        if isempty(f) || f(end) - f(1) > -1e-4
-            disp('Converged!');
-            converged = true;
-        end
-    end
-end
+%% Main iteration loop      
+% Run NCA minimization using three linesearches
+[A, f] = minimize(A(:), method, max_iter, X,  I, out_dim, lambda);
+A = reshape(A, [d out_dim]);
 
 % Compute embedding
 mapping.M = A;
