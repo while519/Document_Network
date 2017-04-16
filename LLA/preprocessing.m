@@ -3,7 +3,7 @@ function [ Y ] = preprocessing(X, out_dim, varargin)
 % 
 % Y = preprocessing(X, out_dim, varargin);
 %
-%   X - (M x N) matrix
+%   X - (M x N) document-term matrix
 %   out_dim - scalar
 %   varargin - string or cell
 %
@@ -81,6 +81,32 @@ switch lower(type)
         figure
         plot(lambda(1 : out_dim)./sum(lambda), '*:', 'MarkerSize', 10);
         title('PCA: variance measured by the eigenvalues');
+        
+    case 'lda'      % dirichlet allocation
+        [WS, DS] = SparseMatrixtoCounts(X');
+        % hyperparameters setting
+        T = out_dim;     % number of topics
+        BETA = 0.01;
+        ALPHA = 50 / T;
+        N = 300;
+        SEED = 3;   % random seed
+        OUTPUT = 1; % what output to show(0 = no output; 1 = iterations; 2 = all output)
+        
+        % this function might need a few minutes to finish
+        tic
+        [WP,DP,~ ] = GibbsSamplerLDA( WS , DS , T , N , ALPHA , BETA , SEED , OUTPUT );
+        toc
+        
+        % visualize the results
+        figure
+        imagesc(WP);
+        title('Word topic matrix structure');
+
+        figure
+        imagesc(DP);
+        title('Document topic matrix structure');
+        Y = full(bsxfun(@rdivide, DP, sum(DP,2)));
+        
         
     otherwise
         error(['unspecified input arguments' type]);

@@ -1,9 +1,9 @@
-function [  ] = rank_plot(X, C)
+function [  ] = rank_plot(X, row_idx, column_idx, varargin)
 %% RANK_PLOT - access the conformity between content and linkages using different different measure
 %
-%  rank_plot(X, C);
+%  rank_plot(X, row_idx, column_idx);
 %
-%   X - (M x N) matrix
+%   row_idx, column_idx - (L x 1) vector
 %   C - (M x M) matrix
 %
 %
@@ -31,12 +31,14 @@ function [  ] = rank_plot(X, C)
 % and to warn for xxx.  Also ensures that
 % output is all xxx, and allows the option of forcing xxx
 
+if length(varargin) == 1
+    headstring = [varargin{1} ' '];
+else
+    headstring = '';
+end
+
 distances = {'euclidean', 'seuclidean', 'cityblock', 'minkowski', 'chebychev', ...
      'cosine'};   % 'correlation', 'spearman', 'hamming' ,'jaccard'
-
-C = triu(C);
-C = C - diag(diag(C));
-[row_idx, column_idx] = find(C > 0);
 
 MR_list = [];
 MRR_list = [];
@@ -50,18 +52,19 @@ end
 
 figure
 bar([MR_list]);
-legend({'Mean Rank'});
+legend({[ headstring 'Mean Rank']});
 set(gca, 'XTick', 1:length(distances), 'XTickLabel', distances);
 
 figure
 bar([MRR_list]);
-legend({'Mean Reciprocal Rank'});
+legend({[headstring 'Mean Reciprocal Rank']});
 set(gca, 'XTick', 1:length(distances), 'XTickLabel', distances);
 
 figure
 bar([hitn_list]);
-legend({'Hit@10 Rate'});
+legend({[headstring 'Hit@10 Rate']});
 set(gca, 'XTick', 1:length(distances), 'XTickLabel', distances);
+
 
 end
 

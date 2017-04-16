@@ -50,25 +50,24 @@ DistMat = squareform(pdist(X, distance));  % distance metric
 
 % calculate the rank for all pairs
 for jj = 1 : length(row_idx)
-    rank = find(idx(:, row_idx(jj)) ==  column_idx(jj)) - 1;
-    rank_ = find(idx(:, column_idx(jj)) == row_idx(jj)) - 1; 
+    rank = find(idx(:, row_idx(jj)) ==  column_idx(jj)) - 1;        % if row contains the citing index, then this returns the citing rank
     
-    if (rank <= 0) | (rank_ <= 0 )
-        disp([row_idx(jj), idx(2, row_idx(jj))]);
-        disp([column_idx(jj), idx(2, column_idx(jj))]);
-        warning('rank of 0 occurs!');
+    if (rank <= 0)
+        %disp([row_idx(jj), idx(2, row_idx(jj))]);
+        %disp([column_idx(jj), idx(2, column_idx(jj))]);
+        %warning('rank of 0 occurs!');
     end
     
-    MRR = MRR + 1/rank + 1/rank_;
-    MR = MR + rank + rank_;
+    MRR = MRR + 1/rank;
+    MR = MR + rank;
 
-    if (rank <= n) && (rank_ <= n)
+    if (rank <= n)
         hitn = hitn + 1;
     end
 end
 
-MRR = MRR / (2 * length(row_idx));
-MR = MR / (2 * length(row_idx));
+MRR = MRR / ( length(row_idx));
+MR = MR / ( length(row_idx));
 hitn = 100 * hitn / length(row_idx);
 
 end

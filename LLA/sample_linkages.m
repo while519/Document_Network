@@ -1,11 +1,12 @@
-function [ row_idx_train, column_idx_train, row_idx_test, column_idx_test, nb_training_samples, ...
-        nb_testing_samples] = sample_linkages( C, sub_sampling_ratio )
+function [ citing_idx_train, cited_idx_train, citing_idx_test, cited_idx_test, nb_training_samples, ...
+        nb_testing_samples] = sample_linkages( citing_index, cited_index, sub_sampling_ratio )
 %% SAMPLE_LINKAGES - sampling the positive linkages into Train/Test split 
 %
 % [ row_idx_train, column_idx_train, row_idx_test, column_idx_test, nb_training_samples, ...
-%        nb_testing_samples] = sample_linkages( C, sub_sampling_ratio );
+%        nb_testing_samples] = sample_linkages( citing_index, cited_index,, sub_sampling_ratio );
 %
-%   C - (M x M) matrix
+%   citing_index - (L x 1) vector
+%   cited_index  - (L x 1) vector
 %   sub_sampling_ratio - scalar
 %
 % Returns :
@@ -40,14 +41,13 @@ function [ row_idx_train, column_idx_train, row_idx_test, column_idx_test, nb_tr
 
 %% Split the dataset into training/testing sets
 % 
-M = size(C, 1);
-total_linkages = M * (M - 1) / 2;
+if length(citing_index) ~= (length(cited_index))
+    error('input citation pairs not match');
+end
 
-% get the indexes of the linkages
-C = triu(C);
-C = C - diag(diag(C));
-[row_idx, column_idx] = find(C > 0);
-nb_positives = length(row_idx);
+nb_positives = length(citing_index);
+M = max([citing_index; cited_index]);
+total_linkages = M * (M - 1) / 2;
 
 
 if ~exist('sub_sampling_ratio', 'var')
@@ -55,7 +55,7 @@ if ~exist('sub_sampling_ratio', 'var')
 else
     nb_training_samples = floor(sub_sampling_ratio * nb_positives);
     if nb_training_samples > nb_positives
-        error('Sampling ratio too high, we use instead the total positives');
+        error('Sampling ratio too high');
     end
 end
 
@@ -70,14 +70,14 @@ disp(['testing linkages: #' num2str(nb_testing_samples) ' ' ...
     num2str(100*nb_testing_samples/total_linkages) '%']);
 
 % random sampling step
-idx_permutation = randperm(length(row_idx));
+idx_permutation = randperm(nb_positives);
 idx_train = idx_permutation(1 : nb_training_samples);
 idx_test = idx_permutation(nb_training_samples + 1 : end);
 
-row_idx_train = row_idx(idx_train);
-column_idx_train = column_idx(idx_train);
-row_idx_test = row_idx(idx_test);
-column_idx_test = column_idx(idx_test);
+citing_idx_train = citing_index(idx_train);
+cited_idx_train = cited_index(idx_train);
+citing_idx_test = citing_index(idx_test);
+cited_idx_test = cited_index(idx_test);
 
 end
 
