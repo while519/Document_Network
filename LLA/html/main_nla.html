@@ -1,0 +1,369 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>main_nla</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-03-19"><meta name="DC.source" content="main_nla.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1></h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Exemplary script for running the nonlinear linkage model</a></li><li><a href="#4">Split the dataset into training/testing sets</a></li><li><a href="#6">Run the nonlinear model</a></li><li><a href="#7">Evaluation using classification error rate</a></li><li><a href="#8">Mean Reciprocal Rank Evaluation</a></li></ul></div><h2>Exemplary script for running the nonlinear linkage model<a name="1"></a></h2><pre class="language-matlab">initialize <span class="string">the</span> <span class="string">script</span>
+</pre><pre class="codeinput">clear <span class="string">classes</span>
+clear <span class="string">all</span>
+close <span class="string">all</span>
+clc
+
+rng(213);
+
+datasets = {<span class="string">'cora'</span>, <span class="string">'citeseer'</span>, <span class="string">'cornell'</span>, <span class="string">'texas'</span>, <span class="string">'washington'</span>, <span class="string">'wisconsin'</span>};
+</pre><pre class="codeoutput">Warning: Objects of 'onCleanup' class exist.  Cannot clear this class or any of
+its superclasses. 
+</pre><pre class="language-matlab">loading <span class="string">the</span> <span class="string">relevent</span> <span class="string">variables/matrices</span> <span class="string">to</span> <span class="string">the</span> <span class="string">workspace</span>
+</pre><pre class="codeinput">processing_data_id = 1;
+
+<span class="comment">% load(['../Data/' datasets{processing_data_id} '.mat'], ...</span>
+<span class="comment">%     'C', 'X', 'webpage_ids', 'webpage_classnames');</span>
+
+load([<span class="string">'../data/'</span> datasets{processing_data_id} <span class="string">'.mat'</span>], <span class="keyword">...</span>
+        <span class="string">'C'</span>, <span class="string">'X'</span>, <span class="string">'webpage_ids'</span>, <span class="string">'webpage_classnames'</span>);
+C = C | C.';
+</pre><h2>Split the dataset into training/testing sets<a name="4"></a></h2><pre class="codeinput">sub_sampling_ratio = 0.001;
+
+M = size(C, 1);
+total_linkages = M * (M - 1) / 2;
+nb_training_samples = floor(sub_sampling_ratio * total_linkages);
+
+<span class="comment">% get the indexes of the linkages</span>
+C = triu(C);
+C = C - diag(diag(C));
+[row_idx, column_idx] = find(C &gt; 0);
+nb_positives = length(row_idx);
+nb_testing_samples = nb_positives - nb_training_samples;
+disp([<span class="string">'known positive linkages: #'</span> num2str(nb_positives) <span class="string">' '</span> <span class="keyword">...</span>
+    num2str(100*nb_positives/total_linkages) <span class="string">'%'</span>]);
+disp([<span class="string">'training linkages: #'</span> num2str(nb_training_samples) <span class="string">' '</span> <span class="keyword">...</span>
+    num2str(100*nb_training_samples/total_linkages) <span class="string">'%'</span>]);
+disp([<span class="string">'testing linkages: #'</span> num2str(nb_testing_samples) <span class="string">' '</span> <span class="keyword">...</span>
+    num2str(100*nb_testing_samples/total_linkages) <span class="string">'%'</span>]);
+
+<span class="comment">% random sampling step</span>
+idx_permutation = randperm(length(row_idx));
+idx_train = idx_permutation(1 : nb_training_samples);
+idx_test = idx_permutation(nb_training_samples + 1 : end);
+
+row_idx_train = row_idx(idx_train);
+column_idx_train = column_idx(idx_train);
+row_idx_test = row_idx(idx_test);
+column_idx_test = column_idx(idx_test);
+
+<span class="comment">% convert matrix for training</span>
+C = sparse(row_idx_train, column_idx_train, <span class="keyword">...</span>
+    ones(nb_training_samples, 1), M, M);
+C = C | C.';
+C = C - diag(diag(C));
+</pre><pre class="codeoutput">known positive linkages: #5278 0.144%
+training linkages: #3665 0.099992%
+testing linkages: #1613 0.044008%
+</pre><pre class="language-matlab">Visualize <span class="string">the</span> <span class="string">matrix</span> <span class="string">strcuture</span>
+</pre><pre class="codeinput">figure
+imagesc(X);
+title(<span class="string">'Cross Group Content Matrix X'</span>);
+
+figure
+imagesc(C);
+title(<span class="string">'Citation Linkages Matrix C'</span>);
+</pre><img vspace="5" hspace="5" src="main_nla_01.png" alt=""> <img vspace="5" hspace="5" src="main_nla_02.png" alt=""> <h2>Run the nonlinear model<a name="6"></a></h2><pre class="codeinput">Z = nla(X, C, 10, <span class="string">'euclidean'</span>);
+</pre><pre class="codeoutput">Warning: solutions can not be found for dimensionality of 10, using the maximum
+embedding dimension instead 
+  138.4338
+  292.8849
+  295.0921
+  301.5455
+  487.1312
+  511.8420
+
+</pre><h2>Evaluation using classification error rate<a name="7"></a></h2><pre class="codeinput">Z = normc(Z);
+lz = categorical(webpage_classnames);
+
+<span class="comment">% train a nearest neigbours classifier</span>
+Mdl = fitcknn(Z, lz, <span class="string">'NumNeighbors'</span>, 1, <span class="string">'Standardize'</span>, 1, <span class="keyword">...</span>
+    <span class="string">'Distance'</span>, <span class="string">'cosine'</span>);
+
+<span class="comment">% examing some of the properties of model</span>
+Mdl.ClassNames
+Mdl.Prior
+
+<span class="comment">% resubstitution loss</span>
+rloss = resubLoss(Mdl);
+
+<span class="comment">% Cross-validated classifier</span>
+CVMdl = crossval(Mdl);
+kloss = kfoldLoss(CVMdl);
+disp([<span class="string">'The resubstitution loss for nearest neighbour classifier: '</span> num2str(rloss)]);
+disp([<span class="string">'The classification error rate: '</span> num2str(kloss)]);
+</pre><pre class="codeoutput">
+ans = 
+
+     Case_Based 
+     Genetic_Algorithms 
+     Neural_Networks 
+     Probabilistic_Methods 
+     Reinforcement_Learning 
+     Rule_Learning 
+     Theory 
+
+
+ans =
+
+    0.1100    0.1544    0.3021    0.1573    0.0801    0.0665    0.1296
+
+The resubstitution loss for nearest neighbour classifier: 0.089365
+The classification error rate: 0.50148
+</pre><h2>Mean Reciprocal Rank Evaluation<a name="8"></a></h2><pre class="codeinput">MRR = 0;
+MR = 0;
+
+C = triu(C);
+C = C - diag(diag(C));
+
+
+[rowidx, columnidx] = find(C &gt; 0);  <span class="comment">% find all training linkages</span>
+
+<span class="comment">% calculate the distance matrix</span>
+DistMat = squareform(pdist(Z));
+[~, idx] = sort(DistMat, <span class="string">'ascend'</span>);  <span class="comment">% sorted ascend for each column</span>
+
+<span class="keyword">for</span> ii = 1 : length(rowidx)
+    rank_train = find(idx(:, rowidx(ii)) ==  columnidx(ii)) - 1;
+    MRR = MRR + 1/rank_train;
+    MR = MR + rank_train;
+<span class="keyword">end</span>
+
+MRR = MRR / length(rowidx);
+MR = MR / length(rowidx);
+disp([<span class="string">'Training set Mean Rank: '</span> num2str(MR)]);
+disp([<span class="string">'Training set Mean Reciprocal Rank: '</span> num2str(MRR)]);
+
+<span class="comment">% testing ranks</span>
+MRR = 0;
+MR = 0;
+
+<span class="keyword">for</span> ii = 1 : length(row_idx_test)
+    rank_test = find(idx(:, row_idx_test(ii)) == column_idx_test(ii)) -1;
+
+    MRR = MRR + 1/rank_test;
+    MR = MR + rank_test;
+<span class="keyword">end</span>
+
+MRR = MRR / length(rowidx);
+MR = MR / length(rowidx);
+disp([<span class="string">'Testing set Mean Rank: '</span> num2str(MR)]);
+disp([<span class="string">'Testing set Mean Reciprocal Rank: '</span> num2str(MRR)]);
+</pre><pre class="codeoutput">Training set Mean Rank: 1561.8641
+Training set Mean Reciprocal Rank: 0.024314
+Testing set Mean Rank: 505.5853
+Testing set Mean Reciprocal Rank: 0.015812
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%%% Exemplary script for running the nonlinear linkage model
+
+%%
+%   initialize the script
+clear classes
+clear all
+close all
+clc
+
+rng(213);
+
+datasets = {'cora', 'citeseer', 'cornell', 'texas', 'washington', 'wisconsin'};
+
+%% 
+%   loading the relevent variables/matrices to the workspace
+processing_data_id = 1;
+
+% load(['../Data/' datasets{processing_data_id} '.mat'], ...
+%     'C', 'X', 'webpage_ids', 'webpage_classnames');
+
+load(['../data/' datasets{processing_data_id} '.mat'], ...
+        'C', 'X', 'webpage_ids', 'webpage_classnames');
+C = C | C.';
+
+%% Split the dataset into training/testing sets
+% 
+sub_sampling_ratio = 0.001;
+
+M = size(C, 1);
+total_linkages = M * (M - 1) / 2;
+nb_training_samples = floor(sub_sampling_ratio * total_linkages);
+
+% get the indexes of the linkages
+C = triu(C);
+C = C - diag(diag(C));
+[row_idx, column_idx] = find(C > 0);
+nb_positives = length(row_idx);
+nb_testing_samples = nb_positives - nb_training_samples;
+disp(['known positive linkages: #' num2str(nb_positives) ' ' ...
+    num2str(100*nb_positives/total_linkages) '%']);
+disp(['training linkages: #' num2str(nb_training_samples) ' ' ...
+    num2str(100*nb_training_samples/total_linkages) '%']);
+disp(['testing linkages: #' num2str(nb_testing_samples) ' ' ...
+    num2str(100*nb_testing_samples/total_linkages) '%']);
+
+% random sampling step
+idx_permutation = randperm(length(row_idx));
+idx_train = idx_permutation(1 : nb_training_samples);
+idx_test = idx_permutation(nb_training_samples + 1 : end);
+
+row_idx_train = row_idx(idx_train);
+column_idx_train = column_idx(idx_train);
+row_idx_test = row_idx(idx_test);
+column_idx_test = column_idx(idx_test);
+
+% convert matrix for training
+C = sparse(row_idx_train, column_idx_train, ...
+    ones(nb_training_samples, 1), M, M);        
+C = C | C.';
+C = C - diag(diag(C));
+    
+%%
+%   Visualize the matrix strcuture
+figure 
+imagesc(X);
+title('Cross Group Content Matrix X');
+
+figure
+imagesc(C);
+title('Citation Linkages Matrix C');
+
+
+%% Run the nonlinear model
+% 
+Z = nla(X, C, 10, 'euclidean');
+
+%% Evaluation using classification error rate
+% 
+Z = normc(Z);
+lz = categorical(webpage_classnames);
+
+% train a nearest neigbours classifier
+Mdl = fitcknn(Z, lz, 'NumNeighbors', 1, 'Standardize', 1, ...
+    'Distance', 'cosine');
+
+% examing some of the properties of model
+Mdl.ClassNames
+Mdl.Prior
+
+% resubstitution loss
+rloss = resubLoss(Mdl);
+
+% Cross-validated classifier
+CVMdl = crossval(Mdl);
+kloss = kfoldLoss(CVMdl);
+disp(['The resubstitution loss for nearest neighbour classifier: ' num2str(rloss)]);
+disp(['The classification error rate: ' num2str(kloss)]);
+
+%% Mean Reciprocal Rank Evaluation
+% 
+MRR = 0;
+MR = 0;
+
+C = triu(C);
+C = C - diag(diag(C));
+
+
+[rowidx, columnidx] = find(C > 0);  % find all training linkages
+
+% calculate the distance matrix
+DistMat = squareform(pdist(Z));
+[~, idx] = sort(DistMat, 'ascend');  % sorted ascend for each column
+
+for ii = 1 : length(rowidx)
+    rank_train = find(idx(:, rowidx(ii)) ==  columnidx(ii)) - 1;
+    MRR = MRR + 1/rank_train;
+    MR = MR + rank_train;
+end
+
+MRR = MRR / length(rowidx);
+MR = MR / length(rowidx);
+disp(['Training set Mean Rank: ' num2str(MR)]);
+disp(['Training set Mean Reciprocal Rank: ' num2str(MRR)]);
+
+% testing ranks
+MRR = 0;
+MR = 0;
+
+for ii = 1 : length(row_idx_test)
+    rank_test = find(idx(:, row_idx_test(ii)) == column_idx_test(ii)) -1;
+
+    MRR = MRR + 1/rank_test;
+    MR = MR + rank_test;
+end
+
+MRR = MRR / length(rowidx);
+MR = MR / length(rowidx);
+disp(['Testing set Mean Rank: ' num2str(MR)]);
+disp(['Testing set Mean Reciprocal Rank: ' num2str(MRR)]);
+
+
+
+##### SOURCE END #####
+--></body></html>
